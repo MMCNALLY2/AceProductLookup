@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ace-product-lookup
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000
+    volumes:
+      - .:/app # Mount the current directory to the /app directory in the container
+      - /app/node_modules # Prevent overwriting node_modules inside the container
+    environment:
+      - NODE_ENV=development
+    command: npm start # Optional: Use npm start if you have a start script in package.json

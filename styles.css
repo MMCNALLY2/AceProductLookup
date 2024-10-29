@@ -1,0 +1,169 @@
+/* Global Styling */
+body {
+  font-size: 1rem; /* Default 16px font size */
+  line-height: 1.5; /* Improved line height for readability */
+  padding: 0;
+  margin: 0;
+}
+
+h1 {
+  margin: 0 0 1rem 0; /* Ensure headings have proper spacing */
+}
+
+h3{
+  margin: 0 0 1rem 0; /* Ensure headings have proper spacing */
+  padding-bottom: 2%;
+  padding-top: 1%;
+}
+
+.logoContainer{
+  text-align: center;
+}
+
+.logoContainer img{
+  width: 10%;
+  display: inline-block;
+}
+
+.container {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  overflow: hidden; /* Prevent elements from overflowing */
+}
+
+/* Side Panels Styling */
+#topItemsPanel, #recentItemsPanel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 24rem; /* Consistent width for both side panels */
+  padding: 1rem; /* Consistent padding for both side panels */
+  background-color: #aeaeae;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#topItemsPanel {
+  left: 0;
+  border-right: .25rem solid rgba(236, 0, 0, 0.66);
+}
+
+#recentItemsPanel {
+  right: 0;
+  border-left: .25rem solid rgba(236, 0, 0, 0.66);
+}
+
+/* Main Content Styling */
+#mainContent {
+  max-width: calc(100% - 48rem); /* Ensure main content fits between the two side panels */
+  margin-left: 24rem; /* Align with left panel */
+  margin-right: 24rem; /* Align with right panel */
+  padding: 1.5rem; /* Added padding to prevent overlapping with side panels */
+  box-sizing: border-box;
+}
+
+/* Search and Dropdown Container Styling */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 65rem; /* Set max width to ensure it's not too wide on large screens */
+  margin: 0 auto; /* Center the container horizontally */
+}
+
+.dropdown-container {
+  width: 100%;
+  position: relative; /* Make the dropdown positioned relative to its container */
+}
+
+/* Form Input Styling */
+#searchBar, #categorySearchInput, #categoriesFilter {
+  width: 100%;
+  box-sizing: border-box; /* Ensure the width includes padding and border */
+}
+
+#categoriesFilter {
+  display: block; /* Show the dropdown */
+  max-height: 35rem; /* Allow for up to 8 options to be shown */
+  /* overflow-y: auto; Add a scrollbar if the list is longer than the height */
+}
+
+/* List Group Items Styling */
+.list-group-item {
+  padding: 0.75rem 1rem; /* Consistent padding */
+  margin-bottom: 0.5rem; /* Consistent margin */
+  border-radius: 0.25rem;
+}
+
+/* Top Items and Recently Copied Items List */
+.top-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modal Styling */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-dialog {
+  width: 32rem; /* Converted 500px to rem */
+}
+
+.copy-sku {
+  width: 25rem; /* Set the width to 100% to make the buttons full-width */
+  min-width: 50%;
+  max-width: 100%;
+  text-align: center; /* Center-align the text */
+  display: block; /* Make the buttons display as block elements */
+  margin-bottom: 0.5rem; /* Add some margin between buttons */
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Container to hold the edit options */
+.edit-options-container {
+  display: flex;
+  align-items: center;
+}
+
+/* 3-dot icon styling */
+.three-dot-icon {
+  background: none;
+  border: none;
+  font-size: 1.25rem; /* Make the icon larger for better visibility */
+  cursor: pointer;
+  margin-left: 0.5rem;
+  color: #007bff;
+}
+
+.three-dot-icon:hover {
+  color: #0056b3; /* Change color on hover */
+}
+
+/* Edit button styling */
+.edit-button {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  display: none; /* Hidden by default */
+}
+
+/* Show the edit button when visible */
+.edit-button.show {
+  display: inline-block; /* Display the button inline when toggled */
+}
+
+/* Style for the product details */
+.product-details {
+  flex: 1; /* Take up remaining space */
+}
