@@ -11,8 +11,8 @@
 <body>
 
 <!---------------------------- Left Panel for Top 10 Most Copied Items -------------------------------------->
-<div id="topItemsPanel">
-  <h3>Most Popular Items</h3>
+<div id="topItemsPanel" class="panel">
+  <button class="btn btn-sm btn-toggle" onclick="togglePanel('topItemsPanel')"><h3>Most Popular Items</h3></button>
   <ul id="topItemsList" class="list-group">
       <!-- Top items will be dynamically populated here -->
   </ul>
@@ -22,8 +22,8 @@
 
 
 <!--------------------------- Right Panel for 10 Most Recently Copied Items ---------------------------------->
-<div id="recentItemsPanel">
-  <h3>Previous 10 Items</h3>
+<div id="recentItemsPanel" class="panel">
+  <button class="btn btn-sm btn-toggle" onclick="togglePanel('recentItemsPanel')"><h3>Previous 10 Items</h3></button>
   <ul id="recentItemsList" class="list-group">
       <!-- Recently copied items will be dynamically populated here -->
   </ul>
@@ -40,12 +40,15 @@
 
 
 
+
 <!------------------------------- Main ------------------------------------------------------------------------>
 <div id="mainContent" class="container mt-4">
   <h1>Product Lookup</h1>
   
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdqRFbv3hVDfWn3j8Vi1iMU3P7728jPwFDa9FR8tAZ1jomZIQ/viewform?usp=sf_link" style="float: right;">Give Feedback</a>
+
   <!-- Centered Search and Dropdown Container -->
-  <div class="search-container">
+  <div class="search-container", id="search-container">
     <!-- Search bar -->
     <input type="text" id="searchBar" class="form-control mb-3" placeholder="Search for a product by name or SKU...">
     
@@ -62,6 +65,73 @@
 
   <!-- Results -->
   <ul id="results" class="list-group mt-3"></ul>
+</div>
+<!------------------------------------------------------------------------------------------------------------->
+
+
+
+<!-------------------------- Add New Item Button and Modal ---------------------------------------------------->
+<!-- Add New Item Button -->
+<div class="text-center mt-4">
+  <button id="addNewItemButton" class="btn btn-success">+ Add New Item</button>
+</div>
+
+<!-- Add New Item Modal -->
+<div id="addNewItemModal" class="modal" tabindex="-1" role="dialog" style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Product</h5>
+        <button id="closeAddNewItemModalButton" class="btn btn-secondary">Cancel</button>
+
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addNewItemForm">
+          <div class="form-group">
+            <label for="newProductName">Product Name</label>
+            <input type="text" class="form-control" id="newProductName" placeholder="Enter product name">
+          </div>
+          <div class="form-group">
+            <label for="newProductSKU">SKU</label>
+            <input type="text" class="form-control" id="newProductSKU" placeholder="Enter SKU">
+          </div>
+          <div class="form-group">
+            <label for="newProductCategory">Category</label>
+            <input type="text" class="form-control" id="newProductCategory" placeholder="Enter category">
+          </div>
+          <div class="form-group">
+            <label for="newProductLocation">Location</label>
+            <input type="text" class="form-control" id="newProductLocation" placeholder="Enter location">
+          </div>
+          <button id="submitNewItemButton" class="btn btn-primary">Add Product</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!------------------------------------------------------------------------------------------------------------->
+
+
+
+<!----------------------------auth modal----------------------------------------------------------------------->
+<div id="authModal" class="modal" tabindex="-1" role="dialog" style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Authorization Required</h5>
+      </div>
+      <div class="modal-body">
+        <label for="authPassword">Enter Password:</label>
+        <input type="password" id="authPassword" class="form-control" placeholder="Password" />
+        <div id="authError" class="text-danger" style="display: none;">Incorrect password</div>
+      </div>
+      <div class="modal-footer">
+        <button id="authSubmitButton" class="btn btn-primary">Submit</button>
+        <button id="authCancelButton" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 <!------------------------------------------------------------------------------------------------------------->
 
@@ -102,6 +172,34 @@
   </div>
 </div>
 <!------------------------------------------------------------------------------------------------------------->
+
+
+
+<script>
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    const mainContent = document.getElementById('mainContent');
+    const topPanel = document.getElementById('topItemsPanel');
+    const recentPanel = document.getElementById('recentItemsPanel');
+
+    // Toggle the minimized class on the specified panel
+    panel.classList.toggle('minimized');
+
+    // Calculate panel widths based on minimized state
+    const topPanelWidth = topPanel.classList.contains('minimized') ? 10 : 24; // Minimized: 10rem, Expanded: 24rem
+    const recentPanelWidth = recentPanel.classList.contains('minimized') ? 10 : 24; // Minimized: 10rem, Expanded: 24rem
+
+    // Adjust the mainContent margins to match panel states
+    mainContent.style.marginLeft = `${topPanelWidth}rem`;
+    mainContent.style.marginRight = `${recentPanelWidth}rem`;
+
+    // Dynamically adjust max-width of main content
+    const availableWidth = 100 - topPanelWidth - recentPanelWidth; // Total width percentage
+    mainContent.style.maxWidth = `calc(${availableWidth}% - 2rem)`; // Subtract padding/margin for breathing room
+}
+</script>
+
+
 
 </body>
 </html>

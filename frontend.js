@@ -4,7 +4,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let skuCopyCounts = {}; // To track how many times each SKU is copied
     let recentlyCopiedItems = []; // Array to store 10 most recently copied items
     let currentEditingProduct = null; // To keep track of the product being edited
+    let currentAction = null; // Store the current action (edit/delete)
+    let currentZone = 'results'; // Initial zone
+    let currentIndex = -1; // Index of the currently focused item in the active zone
 
+    const AUTH_PASSWORD = 'password'; // Simple password for high-level employees
     const searchBar = document.getElementById('searchBar');
     const categorySearchInput = document.getElementById('categorySearchInput');
     const categoriesFilter = document.getElementById('categoriesFilter');
@@ -23,17 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('closeEditButton').addEventListener('click', closeEditForm);
 
     document.getElementById('saveChangesButton').addEventListener('click', saveProductChanges);
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' || event.key === 'Esc') {
-            searchBar.value = '';
-            categoriesFilter.value = '';
-            categorySearchInput.value = '';
-            results.innerHTML = '';
-            categoriesFilter.style.display = 'none';
-            searchBar.focus();
-        }
-    });
 
     // Filter the categories dropdown based on the input in the search field
     categorySearchInput.addEventListener('input', () => {
@@ -72,9 +65,175 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    document.getElementById('authSubmitButton').addEventListener('click', checkAuth);
+
+    document.getElementById('authCancelButton').addEventListener('click', closeAuthModal);
+
+    document.getElementById('addNewItemButton').addEventListener('click', () => {
+      openAuthModal(null, 'add'); // No product, action is "add"
+    });
+
+    document.getElementById('closeAddNewItemModalButton').addEventListener('click', closeAddNewItemModal);
+
+    document.getElementById('submitNewItemButton').addEventListener('click', submitNewItem);
+
+      // Handle arrow key navigation
+      document.addEventListener('keydown', function (event) {
+        console.log(`Key pressed: ${event.key}`);
+        const items = getZoneItems();
+        console.log(`Items available for focus: ${items.length}`);
+    
+        switch (event.key) {
+          case 'ArrowUp':
+            if (items.length > 0) {
+              currentIndex = Math.max(currentIndex - 1, 0); // Prevent going below index 0
+              focusItem(currentIndex);
+            }
+            event.preventDefault();
+            break;
+    
+            case 'ArrowDown':
+              if (items.length > 0) {
+                if (currentIndex === null || currentIndex === undefined) {
+                  currentIndex = 0; // Start at the first item
+                } else {
+                  currentIndex = Math.min(currentIndex + 1, items.length - 1);
+                }
+                focusItem(currentIndex);
+              }
+              event.preventDefault();
+              break;
+    
+          case 'ArrowLeft':
+            // Shift focus to the previous zone
+            if (currentZone === 'results') {
+              currentZone = 'topItems';
+            } else if (currentZone === 'recentItems') {
+              currentZone = 'results';
+            } else if (currentZone === 'topItems') {
+              currentZone = 'recentItems';
+            }
+            currentIndex = 0; // Reset the index for the new zone
+            focusItem(currentIndex); // Focus on the first item in the new zone
+            event.preventDefault();
+            break;
+    
+          case 'ArrowRight':
+            // Shift focus to the next zone
+            if (currentZone === 'results') {
+              currentZone = 'recentItems';
+            } else if (currentZone === 'topItems') {
+              currentZone = 'results';
+            } else if (currentZone === 'recentItems') {
+              currentZone = 'topItems';
+            }
+            currentIndex = 0; // Reset the index for the new zone
+            focusItem(currentIndex); // Focus on the first item in the new zone
+            event.preventDefault();
+            break;
+    
+          default:
+            break;
+        }
+        if (event.key === 'Escape' || event.key === 'Esc') {
+          searchBar.value = '';
+          categoriesFilter.value = '';
+          categorySearchInput.value = '';
+          results.innerHTML = '';
+          categoriesFilter.style.display = 'none';
+          currentZone = 'results';
+          currentIndex = -1;
+          searchBar.focus();
+      }
+      });
+
+
     // Load categories on page load
     loadCategories();
 //----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+  // Helper function to get items in the current zone
+  function getZoneItems() {
+    let items;
+    if (currentZone === 'results') {
+      items = results.querySelectorAll('.copy-sku');
+    } else if (currentZone === 'topItems') {
+      items = topItemsList.querySelectorAll('.copy-sku');
+    } else if (currentZone === 'recentItems') {
+      items = recentItemsList.querySelectorAll('.copy-sku');
+    }
+    console.log(`Items in ${currentZone}:`, items); // Debug log
+    return items;
+  }
+
+  // Helper function to change focus within the zone
+  function focusItem(index) {
+    const items = getZoneItems();
+    if (items.length > 0) {
+      currentIndex = (index + items.length) % items.length;
+      console.log(`Focusing item at index: ${currentIndex}`, items[currentIndex]);
+      items[currentIndex].focus();
+    } else {
+      console.error('No items available to focus');
+    }
+  }
+
+
+
+//-----------------------------------Function to open the authorization modal--------------------------------------------------
+function openAuthModal(product = '', action) {
+  console.log(`Opening auth modal for product: ${product}, action: ${action}`);
+  currentEditingProduct = product; // Store the current product (null for "add")
+  currentAction = action; // Store the current action
+  const authModal = document.getElementById('authModal');
+  if (authModal) {
+    authModal.style.display = 'block';
+  } else {
+    console.error('authModal element not found');
+  }
+}
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+  //--------------------------------Function to close the authorization modal-----------------------------------------------
+  function closeAuthModal() {
+    console.log('Closing auth modal');
+    const authModal = document.getElementById('authModal');
+    const authPassword = document.getElementById('authPassword');
+    const authError = document.getElementById('authError');
+
+    if (authModal && authPassword && authError) {
+      authModal.style.display = 'none';
+      authPassword.value = ''; // Clear password input
+      authError.style.display = 'none'; // Hide error message
+    } else {
+      console.error('One or more elements in closeAuthModal not found');
+    }
+  }
+  //------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//---------------------------Function to check if the entered password is correct------------------------------------------
+function checkAuth() {
+  const password = document.getElementById('authPassword').value;
+
+  if (password === AUTH_PASSWORD) {
+    closeAuthModal(); // Close the auth modal
+    if (currentAction === 'edit') {
+      openEditForm(currentEditingProduct); // Open the edit form
+    } else if (currentAction === 'delete') {
+      deleteProduct(currentEditingProduct.sku); // Call delete product function
+    } else if (currentAction === 'add') {
+      openAddNewItemModal(); // Open "Add New Item" modal
+    }
+  } else {
+    document.getElementById('authError').style.display = 'block'; // Show error message
+  }
+}
+//------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -169,7 +328,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Create a button to copy the SKU
             const copyButton = document.createElement('button');
-            copyButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+            copyButton.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'copy-sku');
+            copyButton.setAttribute('tabindex', '0'); // Ensure the button is focusable
+
             copyButton.textContent = sku;
             copyButton.addEventListener('click', () => {
                 navigator.clipboard.writeText(sku).then(() => {
@@ -210,7 +371,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
             // Create a button to copy the SKU
             const copyButton = document.createElement('button');
-            copyButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+            copyButton.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'copy-sku');
+            copyButton.setAttribute('tabindex', '0'); // Ensure the button is focusable
+
             copyButton.textContent = item.sku;
             copyButton.addEventListener('click', () => {
                 navigator.clipboard.writeText(item.sku).then(() => {
@@ -296,7 +459,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Create a button for copying the SKU
                         const copyButton = document.createElement('button');
-                        copyButton.classList.add('btn', 'btn-outline-primary', 'btn-lg', 'w-50', 'ms-auto');
+                        copyButton.classList.add('btn', 'btn-outline-primary', 'btn-lg', 'w-50', 'ms-auto', 'copy-sku');
+                        copyButton.setAttribute('tabindex', '0'); // Ensure the button is focusable
+
                         copyButton.textContent = product.sku;
 
                         // Add click event listener to copy the SKU and track it
@@ -340,19 +505,33 @@ document.addEventListener('DOMContentLoaded', function () {
                     editButton.textContent = 'Edit';
                     editButton.style.display = 'none'; // Initially hidden
 
+                    // Delete button
+                    const deleteButton = document.createElement('button');
+                    deleteButton.classList.add('btn', 'btn-outline-danger', 'btn-sm');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.style.display = 'none'; // Initially hidden
+                    
+
+
                     // Add click event listener to the 3-dot icon to toggle the edit button
                     threeDotIcon.addEventListener('click', () => {
                         // Toggle the display of the edit button
                         editButton.style.display = editButton.style.display === 'none' ? 'block' : 'none';
+                        deleteButton.style.display = deleteButton.style.display === 'none' ? 'block' : 'none';
                     });
                     // Add click event listener to open the edit form/modal
                     editButton.addEventListener('click', () => {
-                        openEditForm(product); // Function to open the edit form with product details
+                        openAuthModal(product, 'edit'); // Function to open the edit form with product details
+                    });
+
+                    deleteButton.addEventListener('click', () => {
+                        openAuthModal(product, 'delete');
                     });
 
                     // Append the 3-dot icon and edit button to the container
                     editOptionsContainer.appendChild(threeDotIcon);
                     editOptionsContainer.appendChild(editButton);
+                    editOptionsContainer.appendChild(deleteButton);
 
                         li.appendChild(productDetails);
                         li.appendChild(copyButton);
@@ -371,19 +550,114 @@ document.addEventListener('DOMContentLoaded', function () {
 //------------------------------------------------------------------------------------------------------------------------------------
 
 
+//----------------------------------------------------------delete---------------------------------------------------------------- 
+function deleteProduct(sku) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+  
+    fetch(`/api/products/${sku}`, { method: 'DELETE' })
+      .then(response => {
+        if (response.ok) {
+          console.log('Product deleted successfully');
+          searchProducts(searchBar.value, categoriesFilter.value); // Refresh the product list
+        } else {
+          return response.json().then(err => Promise.reject(err));
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting product:', error.message);
+      });
+  }
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//----------------------------------Submit the new item to the API--------------------------------------------------------------------
+function submitNewItem() {
+    const name = document.getElementById('newProductName').value;
+    const sku = document.getElementById('newProductSKU').value;
+    const category = document.getElementById('newProductCategory').value;
+    const location = document.getElementById('newProductLocation').value;
+  
+    // Validate inputs
+    if (!name || !sku || !category || !location) {
+      alert('All fields are required.');
+      return;
+    }
+  
+    // Send data to the API
+    fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, sku, category, location }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          // If the status code is not OK, throw an error with the response
+          return response.json().then((err) => Promise.reject(err));
+        }
+        return response.json(); // Parse the JSON response
+      })
+      .then((data) => {
+        console.log('Product added successfully:', data);
+        alert('Product added successfully!');
+        searchProducts(searchBar.value, categoriesFilter.value); // Refresh product list
+        closeAddNewItemModal();
+      })
+      .catch((error) => {
+        console.error('Error adding product:', error);
+        alert(`Error: ${error.error || 'An unexpected error occurred.'}`);
+      });
+  }
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//----------------------------Open the Add New Item modal----------------------------------------------------
+function openAddNewItemModal() {
+    // Clear the fields
+    document.getElementById('newProductName').value = '';
+    document.getElementById('newProductSKU').value = '';
+    document.getElementById('newProductCategory').value = '';
+    document.getElementById('newProductLocation').value = '';
+  
+    // Show the modal
+    document.getElementById('addNewItemModal').style.display = 'block';
+  }
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//-----------------------------Function to close the Add item form----------------------------------------------------------------------
+function closeAddNewItemModal() {
+    document.getElementById('addNewItemModal').style.display = 'none';
+  }
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+
 
 //---------------------------------Functions to open the edit form with product details-----------------------------------------
-  function openEditForm(product) {
-    currentEditingProduct = product; // Store the current product being edited
+function openEditForm(product) {
+    console.log('Opening edit form for product:', product);
+    currentEditingProduct = product;
 
-    // Fill the form with the product's current details
-    document.getElementById('editProductName').value = product.name;
-    document.getElementById('editProductSKU').value = product.sku;
-    document.getElementById('editProductCategory').value = product.category;
-    document.getElementById('editProductLocation').value = product.location;
+    const editProductName = document.getElementById('editProductName');
+    const editProductSKU = document.getElementById('editProductSKU');
+    const editProductCategory = document.getElementById('editProductCategory');
+    const editProductLocation = document.getElementById('editProductLocation');
+    const editProductModal = document.getElementById('editProductModal');
 
-    // Show the edit modal
-    document.getElementById('editProductModal').style.display = 'block';
+    if (editProductName && editProductSKU && editProductCategory && editProductLocation && editProductModal) {
+      editProductName.value = product.name;
+      editProductSKU.value = product.sku;
+      editProductCategory.value = product.category;
+      editProductLocation.value = product.location;
+
+      editProductModal.style.display = 'block';
+    } else {
+      console.error('One or more elements in openEditForm not found');
+    }
   }
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -396,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-// Function to handle saving the product changes
+//--------------------------Function to handle saving the product changes------------------------------------------------------------
 function saveProductChanges() {
     // Get the updated values from the form
     const updatedProduct = {

@@ -11,8 +11,8 @@ h1 {
 }
 
 h3{
-  margin: 0 0 1rem 0; /* Ensure headings have proper spacing */
-  padding-bottom: 2%;
+/* Ensure headings have proper spacing */
+  padding-bottom: 1%;
   padding-top: 1%;
 }
 
@@ -32,44 +32,83 @@ h3{
 }
 
 /* Side Panels Styling */
-#topItemsPanel, #recentItemsPanel {
+.panel {
   position: fixed;
   top: 0;
   bottom: 0;
   width: 24rem; /* Consistent width for both side panels */
+  transition: width 0.3s ease;
   padding: 1rem; /* Consistent padding for both side panels */
   background-color: #aeaeae;
   overflow-y: auto;
   text-align: center;
 }
 
+/* Minimized panels */
+#topItemsPanel.minimized, #recentItemsPanel.minimized {
+  width: 10rem; /* Minimized width */
+}
+
+/* Adjust main content for minimized panels */
+#topItemsPanel.minimized + #mainContent,
+#recentItemsPanel.minimized + #mainContent {
+  margin-left: 10rem; /* Matches minimized left panel */
+  margin-right: 10rem; /* Matches minimized right panel */
+}
+
 #topItemsPanel {
   left: 0;
   border-right: .25rem solid rgba(236, 0, 0, 0.66);
+  transform: translateX(0%); /* Hidden by default */
 }
 
 #recentItemsPanel {
   right: 0;
   border-left: .25rem solid rgba(236, 0, 0, 0.66);
+  transform: translateX(0%); /* Hidden by default */
 }
 
 /* Main Content Styling */
 #mainContent {
-  max-width: calc(100% - 48rem); /* Ensure main content fits between the two side panels */
-  margin-left: 24rem; /* Align with left panel */
-  margin-right: 24rem; /* Align with right panel */
-  padding: 1.5rem; /* Added padding to prevent overlapping with side panels */
+  margin-left: 24rem;
+  margin-right: 24rem;
+  padding: 1.5rem;
   box-sizing: border-box;
+  transition: margin 0.3s ease, width 0.3s ease;
+  width: auto; /* Let JavaScript dynamically control this */
+}
+
+/* When both panels are minimized */
+.minimized #mainContent {
+  max-width: calc(100% - 20rem); /* Adjusted for minimized panels */
+  margin-left: 10rem; /* Matches minimized left panel width */
+  margin-right: 10rem; /* Matches minimized right panel width */
+}
+
+/* Hide non-button content when panels are minimized */
+#topItemsPanel.minimized .top-item span,
+#recentItemsPanel.minimized .top-item span {
+  display: none; /* Hide text content */
+}
+
+/* Adjust button alignment and display for minimized panels */
+#topItemsPanel.minimized .copy-sku,
+#recentItemsPanel.minimized .copy-sku {
+  width: 100%; /* Ensure buttons take full width */
+  text-align: center; /* Center-align button text */
+  display: block; /* Ensure buttons are displayed */
 }
 
 /* Search and Dropdown Container Styling */
 .search-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 65rem; /* Set max width to ensure it's not too wide on large screens */
-  margin: 0 auto; /* Center the container horizontally */
+  width: 100%; /* Allow it to stretch naturally */
+  max-width: 100%; /* Remove unnecessary restrictions */
+  margin: 0 auto;
+  transition: width 0.3s ease;
+}
+
+.minimized .search-container{
+    width: 100%; /* Fully minimized panels */
 }
 
 .dropdown-container {
@@ -127,8 +166,34 @@ h3{
   text-align: center; /* Center-align the text */
   display: block; /* Make the buttons display as block elements */
   margin-bottom: 0.5rem; /* Add some margin between buttons */
-  margin-right: auto;
-  margin-left: auto;
+  margin-right: 0%;
+  
+}
+
+/* Highlight buttons when focused (keyboard navigation) */
+.copy-sku:focus {
+  background-color: #007bff; /* Bootstrap primary blue */
+  color: white;
+  border-color: #0056b3; /* Darker blue for border */
+  outline: none; /* Remove default outline */
+}
+
+/* Ensure hover and focus are consistent */
+.copy-sku:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+#topItemsList .copy-sku,
+#recentItemsList .copy-sku {
+  width: auto; /* Let the button adjust to the content */
+  max-width: 10rem; /* Set a reasonable maximum width */
+  text-align: center; /* Center-align text inside the button */
+  padding: .5rem 1rem; /* Adjust padding for better usability */
+  margin: auto;
+  margin-right: 0%;
+
 }
 
 /* Container to hold the edit options */
@@ -154,7 +219,9 @@ h3{
 /* Edit button styling */
 .edit-button {
   margin-left: 0.5rem;
+  margin-right: 0.5rem;
   padding: 0.25rem 0.5rem;
+  padding-right: 5%;
   display: none; /* Hidden by default */
 }
 
@@ -167,3 +234,61 @@ h3{
 .product-details {
   flex: 1; /* Take up remaining space */
 }
+
+@media screen and (max-width: 1366px) and (max-height: 768px) {
+  /* General layout adjustments */
+  body {
+    font-size: 0.9rem; /* Slightly smaller font size for better fit */
+  }
+
+  #topItemsPanel,
+  #recentItemsPanel {
+    width: 18rem; /* Adjust panel widths to fit smaller resolutions */
+  }
+
+  #mainContent {
+    width: calc(100% - 36rem); /* Adjust dynamically */
+    margin-left: 18rem;
+    margin-right: 18rem;
+    padding: 1rem;
+  }
+
+  #searchBar,
+  #categorySearchInput,
+  #categoriesFilter {
+    font-size: 0.875rem; /* Slightly smaller text size */
+    padding: 0.5rem; /* Adjust padding for compact inputs */
+  }
+
+  /* Adjust button sizes */
+  button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .copy-sku {
+    width: 15rem; /* Reduce button width for smaller resolution */
+  }
+
+  /* Adjust modal sizes */
+  .modal-dialog {
+    width: 90%; /* Make the modal responsive */
+    max-width: 30rem;
+  }
+
+  /* Adjust category dropdown */
+  #categoriesFilter {
+    max-height: 10rem; /* Limit height of dropdown to fit screen */
+    overflow-y: auto;
+  }
+
+  /* Adjust header sizes */
+  h1 {
+    font-size: 1.5rem; /* Adjust header size */
+  }
+
+  h3 {
+    font-size: 1.25rem; /* Adjust subheader size */
+  }
+}
+

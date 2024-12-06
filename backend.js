@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const db = require('./db'); // SQLite database connection file
 const app = express();
+const bodyParser = require('body-parser');
 const port = 3000;
 
 // Middleware to serve static files like index.html
@@ -101,6 +102,62 @@ app.put('/api/products/:sku', (req, res) => {
 });
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
+
+//------------------------------------------------------ADD NEW ITEM API-------------------------------------------------------------------------
+app.post('/api/products', (req, res) => {
+  console.log('Received POST request to add a new product');
+  console.log('Request body:', req.body);
+
+  // Extract product details from the request body
+  const { name, sku, category, location } = req.body;
+
+  // Validate the input
+  if (!name || !sku || !category || !location) {
+    console.error('Validation failed: Missing required fields');
+    return res.status(400).json({ error: 'All fields (name, sku, category, location) are required' });
+  }
+
+  // SQL query to insert a new product into the database
+  const sql = `
+    INSERT INTO products (name, sku, category, location) 
+    VALUES (?, ?, ?, ?);
+  `;
+  const params = [name, sku, category, location];
+
+  // Execute the query
+  db.run(sql, params, function (err) {
+    if (err) {
+      console.error('Error inserting new product:', err.message);
+      res.status(500).json({ error: 'Failed to add new product' });
+    } else {
+      console.log('New product added with ID:', this.lastID);
+      res.status(201).json({ message: 'Product added successfully', id: this.lastID });
+    }
+  });
+});
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------delete api------------------------------------------------------------
+app.delete('/api/products/:sku', (req, res) => {
+  const { sku } = req.params;
+  console.log(`Received DELETE request for SKU: ${sku}`);
+
+  const sql = `DELETE FROM products WHERE sku = ?`;
+
+  db.run(sql, [sku], function (err) {
+    if (err) {
+      console.error('Error deleting product:', err.message);
+      res.status(500).json({ error: err.message });
+    } else if (this.changes === 0) {
+      res.status(404).json({ error: 'Product not found' });
+    } else {
+      res.json({ message: 'Product deleted successfully' });
+    }
+  });
+});
+//-----------------------------------------------------------------------------------------------------------------------------------------
 
 
 // Start the server
